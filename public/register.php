@@ -6,11 +6,11 @@ require_once __DIR__ . '/../controllers/auth_controller.php';
 
 $authController = new AuthController();
 
-$message = '';
+$message = 'hello';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $message = $authController->register();
 }
 
 // Include the view
-require_once __DIR__ . '/../views/register.php';
+require_once __DIR__ . '../views/register.php';
