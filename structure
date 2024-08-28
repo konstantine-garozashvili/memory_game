@@ -1,0 +1,44 @@
+memory-game/
+│
+├── public/
+│   ├── index.php
+│   ├── register.php
+│   ├── login.php
+│   ├── dashboard.php
+│   ├── game.php
+│   ├── css/
+│   │   ├── style.css
+│   │   └── game.css
+│   ├── js/
+│   │   ├── main.js
+│   │   └── game.js
+│   └── images/
+│       └── default-profile.jpg
+│
+├── includes/
+│   ├── config.php
+│   ├── db.php
+│   ├── functions.php
+│   ├── header.php
+│   └── footer.php
+│
+├── controllers/
+│   ├── auth_controller.php
+│   ├── user_controller.php
+│   └── game_controller.php
+│
+├── models/
+│   ├── User.php
+│   └── Game.php
+│
+├── views/
+│   ├── register.php
+│   ├── login.php
+│   ├── dashboard.php
+│   └── game.php
+│
+├── uploads/
+│   └── profile_pictures/
+│
+└── vendor/
+    └── (PHPMailer and other dependencies)
