@@ -3,10 +3,6 @@
 
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../vendor/autoload.php'; // For PHPMailer
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
 class AuthController {
     private $db;
@@ -21,15 +17,13 @@ class AuthController {
             $username = $this->db->real_escape_string($_POST['username']);
             $email = $this->db->real_escape_string($_POST['email']);
             $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-            $verification_token = bin2hex(random_bytes(16));
 
-            $sql = "INSERT INTO users (username, email, password, verification_token) VALUES (?, ?, ?, ?)";
+            $sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
             $stmt = $this->db->prepare($sql);
-            $stmt->bind_param("ssss", $username, $email, $password, $verification_token);
+            $stmt->bind_param("sss", $username, $email, $password);
 
             if ($stmt->execute()) {
-                $this->sendVerificationEmail($email, $username, $verification_token);
-                return "Registration successful. Please check your email to verify your account.";
+                return "Registration successful. You can now log in.";
             } else {
                 return "Error: " . $stmt->error;
             }
@@ -38,29 +32,38 @@ class AuthController {
         }
     }
 
-    private function sendVerificationEmail($email, $username, $verification_token) {
-        $mail = new PHPMailer(true);
-        try {
-            // SMTP configuration
-            $mail->isSMTP();
-            $mail->Host = SMTP_HOST;
-            $mail->SMTPAuth = true;
-            $mail->Username = SMTP_USERNAME;
-            $mail->Password = SMTP_PASSWORD;
-            $mail->SMTPSecure = 'tls';
-            $mail->Port = SMTP_PORT;
+    public function login() {
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $email = $this->db->real_escape_string($_POST['email']);
+            $password = $_POST['password'];
 
-            $mail->setFrom('noreply@memorygame.com', 'Memory Game');
-            $mail->addAddress($email, $username);
-            $mail->isHTML(true);
-            $mail->Subject = 'Verify your email';
-            $mail->Body = "Click this link to verify your email: " . SITE_URL . "/verify.php?token=$verification_token";
+            $sql = "SELECT id, username, password FROM users WHERE email = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-            $mail->send();
-        } catch (Exception $e) {
-            error_log("Failed to send verification email. Error: {$mail->ErrorInfo}");
+            if ($result->num_rows == 1) {
+                $user = $result->fetch_assoc();
+                if (password_verify($password, $user['password'])) {
+                    session_start();
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+                    return "Login successful. Redirecting to dashboard...";
+                } else {
+                    return "Invalid email or password.";
+                }
+            } else {
+                return "Invalid email or password.";
+            }
+
+            $stmt->close();
         }
     }
 
-    // Other authentication methods (login, logout, etc.) would go here
+    public function logout() {
+        session_start();
+        session_destroy();
+        return "You have been logged out.";
+    }
 }
