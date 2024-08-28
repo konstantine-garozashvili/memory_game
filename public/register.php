@@ -13,4 +13,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Include the view
-require_once __DIR__ . '../views/register.php';
+require_once __DIR__ . '/../views/register.php';
