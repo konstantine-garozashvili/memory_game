@@ -26,7 +26,9 @@ if (!$game) {
     exit();
 }
 
-$opponent_id = ($game['player1_id'] == $user_id) ? $game['player2_id'] : $game['player1_id'];
+$is_player1 = ($game['player1_id'] == $user_id);
+$opponent_id = $is_player1 ? $game['player2_id'] : $game['player1_id'];
+
 $sql = "SELECT username FROM users WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $opponent_id);
@@ -39,34 +41,40 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $current_user = $stmt->get_result()->fetch_assoc();
+
+// Define the number of pairs in the game
+$total_pairs = 8; // Adjust this number based on your game design
 ?>
-<!-- ... (previous PHP code remains the same) ... -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game - Memory Card Game</title>
+    <title>Game #<?php echo $game_id; ?> - Memory Card Game</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <h2>Game #<?php echo $game_id; ?></h2>
-    <p>Playing against: <?php echo $opponent['username']; ?></p>
-    <p>Your username: <?php echo $current_user['username']; ?></p>
+    <p>Playing against: <?php echo htmlspecialchars($opponent['username']); ?></p>
+    <p>Your username: <?php echo htmlspecialchars($current_user['username']); ?></p>
 
     <div id="game-board" class="game-board">
-        <p>If you can see this, the game board div exists but hasn't been populated by JavaScript.</p>
+        <!-- Game board will be populated by JavaScript -->
+    </div>
+
+    <div id="game-info">
+        <p>Your turn: <span id="is-your-turn">Waiting...</span></p>
+        <p>Your matches: <span id="your-matches">0</span></p>
+        <p>Opponent's matches: <span id="opponent-matches">0</span></p>
     </div>
 
     <script>
-        const gameId = '<?php echo $game_id; ?>';
-        const playerId = '<?php echo $current_user['username']; ?>';
-        console.log("Game ID:", gameId);
-        console.log("Player ID:", playerId);
+    const gameId = <?php echo json_encode($game_id); ?>;
+    const playerId = <?php echo json_encode($user_id); ?>;
+    const isPlayer1 = <?php echo json_encode($is_player1); ?>;
+    const totalPairs = <?php echo json_encode($total_pairs); ?>;
+    const opponentName = <?php echo json_encode($opponent['username']); ?>;
     </script>
-    <script src="js/game.js?v=2"></script>
+    <script src="js/game.js"></script>
 </body>
 </html>
-
-
-

@@ -1,53 +1,65 @@
-console.log("game.js is loading");
+console.log("Game.js loaded");
 
-let gameBoard, flippedCards = [], playerMatches = 0, totalPairs = 10;
+let gameBoard, flippedCards = [], playerMatches = 0, opponentMatches = 0, isYourTurn;
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM fully loaded and parsed");
+    console.log("DOM fully loaded");
     gameBoard = document.getElementById('game-board');
-    if (gameBoard) {
-        console.log("Game board found, initializing game");
-        initGame();
-    } else {
-        console.error("Game board not found");
-    }
+    console.log("Game board element:", gameBoard);
+    initGame();
 });
 
 function initGame() {
-    const cards = createShuffledDeck(totalPairs);
-    renderGameBoard(cards);
-}
-
-function createShuffledDeck(numPairs) {
-    console.log("Creating shuffled deck");
-    const deck = Array.from({ length: numPairs }, (_, i) => i + 1).flatMap(i => [i, i]);
-    return deck.sort(() => Math.random() - 0.5);
+    console.log("Initializing game");
+    fetch(`api/get_game_state.php?game_id=${gameId}`)
+        .then(response => {
+            console.log("Raw response:", response);
+            return response.json();
+        })
+        .then(data => {
+            console.log("Game state data:", data);
+            if (data.error) {
+                console.error('Error:', data.error);
+                return;
+            }
+            renderGameBoard(data.cards);
+            updateGameInfo(data);
+            startGameLoop();
+        })
+        .catch(error => console.error('Error:', error));
 }
 
 function renderGameBoard(cards) {
-    console.log("Rendering game board");
+    console.log("Rendering game board with cards:", cards);
+    if (!gameBoard) {
+        console.error("Game board element not found");
+        return;
+    }
     gameBoard.innerHTML = '';
-    cards.forEach((cardValue, index) => {
+    cards.forEach((card, index) => {
         const cardElement = document.createElement('div');
         cardElement.className = 'card';
-        cardElement.dataset.value = cardValue;
         cardElement.dataset.index = index;
         cardElement.innerHTML = `
-            <div class="card-front"></div>
-            <div class="card-back">${cardValue}</div>
+            <div class="card-inner">
+                <div class="card-front"></div>
+                <div class="card-back">${card}</div>
+            </div>
         `;
-        cardElement.addEventListener('click', () => flipCard(cardElement));
+        cardElement.addEventListener('click', () => flipCard(cardElement, index));
         gameBoard.appendChild(cardElement);
     });
-    console.log("Game board rendered with", cards.length, "cards");
+    console.log("Game board rendered");
 }
 
-function flipCard(card) {
-    console.log("Card clicked", card.dataset.value);
-    if (flippedCards.length === 2 || card.classList.contains('flipped')) return;
+// ... rest of your game.js file ...
+
+
+function flipCard(card, index) {
+    if (!isYourTurn || flippedCards.length === 2 || card.classList.contains('flipped')) return;
 
     card.classList.add('flipped');
-    flippedCards.push(card);
+    flippedCards.push({ element: card, index: index });
 
     if (flippedCards.length === 2) {
         setTimeout(checkMatch, 1000);
@@ -55,37 +67,64 @@ function flipCard(card) {
 }
 
 function checkMatch() {
-    console.log("Checking for match");
     const [card1, card2] = flippedCards;
-    const isMatch = card1.dataset.value === card2.dataset.value;
+    const isMatch = card1.element.querySelector('.card-back').textContent === 
+                    card2.element.querySelector('.card-back').textContent;
 
     if (isMatch) {
-        console.log("Match found");
-        card1.removeEventListener('click', () => flipCard(card1));
-        card2.removeEventListener('click', () => flipCard(card2));
         playerMatches++;
-        checkWinCondition();
+        document.getElementById('your-matches').textContent = playerMatches;
     } else {
-        console.log("No match");
-        setTimeout(() => {
-            card1.classList.remove('flipped');
-            card2.classList.remove('flipped');
-        }, 1000);
+        card1.element.classList.remove('flipped');
+        card2.element.classList.remove('flipped');
+        isYourTurn = false;
+        document.getElementById('is-your-turn').textContent = 'No';
     }
 
     flippedCards = [];
+    sendMoveToServer(card1.index, card2.index, isMatch);
+    checkWinCondition();
+}
+
+function sendMoveToServer(index1, index2, isMatch) {
+    fetch('api/make_move.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            game_id: gameId,
+            player_id: playerId,
+            index1: index1,
+            index2: index2,
+            is_match: isMatch
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            console.error('Error:', data.error);
+        } else {
+            updateGameInfo(data);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function updateGameInfo(data) {
+    isYourTurn = data.current_turn === playerId;
+    document.getElementById('is-your-turn').textContent = isYourTurn ? 'Yes' : 'No';
+    document.getElementById('your-matches').textContent = data.your_matches;
+    document.getElementById('opponent-matches').textContent = data.opponent_matches;
 }
 
 function checkWinCondition() {
-    console.log("Checking win condition");
     if (playerMatches === totalPairs) {
-        console.log("Player has won");
         sendGameOverToServer();
     }
 }
 
 function sendGameOverToServer() {
-    console.log("Sending game over to server");
     fetch('api/game_actions.php', {
         method: 'POST',
         headers: {
@@ -99,16 +138,33 @@ function sendGameOverToServer() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.winner) {
+        if (data.success) {
             alert(`Game Over! ${data.winner === playerId ? 'You win!' : 'You lose!'}`);
-            window.location.href = 'dashboard.php'; // Redirect to dashboard after game ends
+            window.location.href = 'dashboard.php';
         } else {
             console.error('Error determining winner:', data.error);
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-    });
+    .catch(error => console.error('Error:', error));
 }
 
-console.log("game.js finished loading");
+function startGameLoop() {
+    setInterval(() => {
+        fetch(`api/get_game_state.php?game_id=${gameId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    return;
+                }
+                updateGameInfo(data);
+                if (data.game_over) {
+                    alert(data.winner === playerId ? 'You win!' : 'You lose!');
+                    window.location.href = 'dashboard.php';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }, 5000);
+}
+
+initGame();

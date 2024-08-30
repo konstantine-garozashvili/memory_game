@@ -7,7 +7,9 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
-
+// Clean up finished games
+$sql = "DELETE FROM games WHERE status = 'finished'";
+$conn->query($sql);
 $user_id = $_SESSION['user_id'];
 
 // Fetch active games
@@ -55,11 +57,8 @@ $pending_invitations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             <?php foreach ($pending_invitations as $invitation): ?>
                 <li>
                     Invitation from <?php echo $invitation['username']; ?>
-                    <form action="invite.php" method="POST" style="display: inline;">
-                        <input type="hidden" name="invitation_id" value="<?php echo $invitation['id']; ?>">
-                        <button type="submit" name="action" value="accept">Accept</button>
-                        <button type="submit" name="action" value="decline">Decline</button>
-                    </form>
+                    <button onclick="acceptInvitation(<?php echo $invitation['id']; ?>)">Accept</button>
+                    <button onclick="declineInvitation(<?php echo $invitation['id']; ?>)">Decline</button>
                 </li>
             <?php endforeach; ?>
         <?php endif; ?>
@@ -78,47 +77,97 @@ $pending_invitations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         fetch('api/check_updates.php')
             .then(response => response.json())
             .then(data => {
-                updateActiveGames(data.active_games);
-                updatePendingInvitations(data.pending_invitations);
+                console.log('Parsed data:', data);
+                if (data.pending_invitations) {
+                    updatePendingInvitations(data.pending_invitations);
+                }
+                if (data.active_games) {
+                    updateActiveGames(data.active_games);
+                }
             })
             .catch(error => console.error('Error checking for updates:', error));
     }
 
-    function updateActiveGames(games) {
-        const gamesList = document.getElementById('active-games-list');
-        gamesList.innerHTML = '';
-        if (games.length === 0) {
-            gamesList.innerHTML = '<li>No active games.</li>';
-        } else {
-            games.forEach(game => {
-                gamesList.innerHTML += `<li><a href="game.php?id=${game.id}">Game #${game.id}</a></li>`;
-            });
-        }
-    }
-
     function updatePendingInvitations(invitations) {
         const invitationsList = document.getElementById('pending-invitations-list');
-        invitationsList.innerHTML = '';
         if (invitations.length === 0) {
             invitationsList.innerHTML = '<li>No pending invitations.</li>';
         } else {
+            invitationsList.innerHTML = '';
             invitations.forEach(invitation => {
-                invitationsList.innerHTML += `
-                    <li>
-                        Invitation from ${invitation.username}
-                        <form action="invite.php" method="POST" style="display: inline;">
-                            <input type="hidden" name="invitation_id" value="${invitation.id}">
-                            <button type="submit" name="action" value="accept">Accept</button>
-                            <button type="submit" name="action" value="decline">Decline</button>
-                        </form>
-                    </li>
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    Invitation from ${invitation.username}
+                    <button onclick="acceptInvitation(${invitation.id})">Accept</button>
+                    <button onclick="declineInvitation(${invitation.id})">Decline</button>
                 `;
+                invitationsList.appendChild(listItem);
+            });
+        }
+        console.log('Updated invitations:', invitations);
+    }
+
+    function updateActiveGames(games) {
+        const gamesList = document.getElementById('active-games-list');
+        if (games.length === 0) {
+            gamesList.innerHTML = '<li>No active games.</li>';
+        } else {
+            gamesList.innerHTML = '';
+            games.forEach(game => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `<a href="game.php?id=${game.id}">Game #${game.id}</a>`;
+                gamesList.appendChild(listItem);
             });
         }
     }
 
-    // Check for updates every 10 seconds
-    setInterval(checkForUpdates, 10000);
+    function acceptInvitation(invitationId) {
+    fetch('api/accept_invitation.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ invitation_id: invitationId })
+    })
+    .then(response => response.text())  // Change this line from response.json() to response.text()
+    .then(text => {
+        console.log('Raw server response:', text);  // Log the raw response
+        try {
+            const data = JSON.parse(text);
+            if (data.success) {
+                alert('Invitation accepted. Redirecting to game...');
+                window.location.href = `game.php?id=${data.game_id}`;
+            } else {
+                console.error('Error accepting invitation:', data.error);
+            }
+        } catch (e) {
+            console.error('Error parsing JSON:', e);
+        }
+    })
+    .catch(error => console.error('Fetch error:', error));
+}
+
+    function declineInvitation(invitationId) {
+        fetch('api/decline_invitation.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ invitation_id: invitationId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                checkForUpdates(); // Refresh the invitations list
+            } else {
+                console.error('Error declining invitation:', data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Check for updates every 5 seconds
+    setInterval(checkForUpdates, 5000);
 
     // Also check immediately when the page loads
     checkForUpdates();
