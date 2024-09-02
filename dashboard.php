@@ -169,6 +169,22 @@ $pending_invitations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     // Check for updates every 5 seconds
     setInterval(checkForUpdates, 5000);
 
+
+    function checkForGameStart() {
+    fetch('api/check_game_start.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.game_id) {
+                window.location.href = `game.php?id=${data.game_id}`;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Check for game start every 5 seconds
+setInterval(checkForGameStart, 5000);
+
+
     // Also check immediately when the page loads
     checkForUpdates();
     </script>
