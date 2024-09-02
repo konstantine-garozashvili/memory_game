@@ -1,5 +1,7 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
 
@@ -7,6 +9,8 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+
+
 // Clean up finished games
 $sql = "DELETE FROM games WHERE status = 'finished'";
 $conn->query($sql);
@@ -73,20 +77,22 @@ $pending_invitations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     <a href="logout.php">Logout</a>
 
     <script>
-    function checkForUpdates() {
-        fetch('api/check_updates.php')
-            .then(response => response.json())
-            .then(data => {
-                console.log('Parsed data:', data);
-                if (data.pending_invitations) {
-                    updatePendingInvitations(data.pending_invitations);
-                }
-                if (data.active_games) {
-                    updateActiveGames(data.active_games);
-                }
-            })
-            .catch(error => console.error('Error checking for updates:', error));
-    }
+  function checkForUpdates() {
+    fetch('api/check_updates.php')
+        .then(response => response.text()) // Use response.text() to see the raw response
+        .then(text => {
+            console.log('Raw response:', text); // Log the raw response
+            const data = JSON.parse(text); // Parse the text manually
+            console.log('Parsed data:', data);
+            if (data.pending_invitations) {
+                updatePendingInvitations(data.pending_invitations);
+            }
+            if (data.active_games) {
+                updateActiveGames(data.active_games);
+            }
+        })
+        .catch(error => console.error('Error checking for updates:', error));
+}
 
     function updatePendingInvitations(invitations) {
         const invitationsList = document.getElementById('pending-invitations-list');
