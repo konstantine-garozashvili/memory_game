@@ -43,7 +43,7 @@ $stmt->execute();
 $current_user = $stmt->get_result()->fetch_assoc();
 
 // Define the number of pairs in the game
-$total_pairs = 8; // Adjust this number based on your game design
+$total_pairs = 10; // Adjust this number based on your game design
 ?>
 <!DOCTYPE html>
 <html lang="en">

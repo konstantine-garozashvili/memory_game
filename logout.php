@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/config.php';
+
 require_once 'includes/db.php';
 
 // No need to call session_start() here if it's already in config.php

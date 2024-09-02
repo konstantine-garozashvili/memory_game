@@ -3,9 +3,9 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', '172.20.10.2');
+define('DB_USER', 'linux-server');
+define('DB_PASS', '010203');
 define('DB_NAME', 'memory_game');
 
 // Error reporting
