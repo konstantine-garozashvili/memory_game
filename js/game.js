@@ -167,4 +167,42 @@ function startGameLoop() {
     }, 5000);
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM fully loaded");
+    gameBoard = document.getElementById('game-board');
+    console.log("Game board element:", gameBoard);
+    initGame();
+
+    // Add event listener for surrender button
+    document.getElementById('surrender-button').addEventListener('click', () => {
+        if (confirm('Are you sure you want to surrender?')) {
+            surrenderGame();
+        }
+    });
+});
+
+function surrenderGame() {
+    fetch('../api/surrender.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            game_id: gameId,
+            player_id: playerId
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('You have surrendered. Redirecting to dashboard...');
+            window.location.href = '../dashboard.php';
+        } else {
+            console.error('Error surrendering:', data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
 initGame();

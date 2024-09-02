@@ -68,6 +68,8 @@ $total_pairs = 8; // Adjust this number based on your game design
         <p>Opponent's matches: <span id="opponent-matches">0</span></p>
     </div>
 
+    <button id="surrender-button">Surrender</button>
+
     <script>
     const gameId = <?php echo json_encode($game_id); ?>;
     const playerId = <?php echo json_encode($user_id); ?>;
