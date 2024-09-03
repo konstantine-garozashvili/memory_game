@@ -1,5 +1,4 @@
 <?php
-
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
 
@@ -42,21 +41,40 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $current_user = $stmt->get_result()->fetch_assoc();
 
-// Define the number of pairs in the game
-$total_pairs = 10; // Adjust this number based on your game design
+// Get the game mode
+$game_mode = $game['game_mode'];
+
+// Define the number of pairs based on the game mode
+$total_pairs = ($game_mode === 'visible_memory') ? 25 : 8; // 50 cards for visible memory, 16 for hidden
+
+// Function to get a human-readable game mode name
+function getGameModeName($mode) {
+    switch ($mode) {
+        case 'hidden_memory':
+            return 'Hidden Memory Game';
+        case 'visible_memory':
+            return '50-Card Memory Game';
+        default:
+            return 'Unknown Game Mode';
+    }
+}
+
+$game_mode_name = getGameModeName($game_mode);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game #<?php echo $game_id; ?> - Memory Card Game</title>
+    <title>Game #<?php echo $game_id; ?> - <?php echo htmlspecialchars($game_mode_name); ?></title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h2>Game #<?php echo $game_id; ?></h2>
+    <h2>Game #<?php echo $game_id; ?> - <?php echo htmlspecialchars($game_mode_name); ?></h2>
     <p>Playing against: <?php echo htmlspecialchars($opponent['username']); ?></p>
     <p>Your username: <?php echo htmlspecialchars($current_user['username']); ?></p>
+    <p>Game Mode: <?php echo htmlspecialchars($game_mode_name); ?></p>
 
     <div id="game-board" class="game-board">
         <!-- Game board will be populated by JavaScript -->
@@ -74,6 +92,7 @@ $total_pairs = 10; // Adjust this number based on your game design
     const isPlayer1 = <?php echo json_encode($is_player1); ?>;
     const totalPairs = <?php echo json_encode($total_pairs); ?>;
     const opponentName = <?php echo json_encode($opponent['username']); ?>;
+    const gameMode = <?php echo json_encode($game_mode); ?>;
     </script>
     <script src="js/game.js"></script>
 </body>

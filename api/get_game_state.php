@@ -1,6 +1,5 @@
 <?php
 session_start();
-require_once '../includes/config.php';
 require_once '../includes/db.php';
 
 header('Content-Type: application/json');
@@ -37,6 +36,12 @@ try {
     $your_matches = $is_player1 ? $game['player1_matches'] : $game['player2_matches'];
     $opponent_matches = $is_player1 ? $game['player2_matches'] : $game['player1_matches'];
 
+    // Retrieve last moves
+    $stmt = $conn->prepare("SELECT * FROM game_moves WHERE game_id = ? ORDER BY id ASC");
+    $stmt->bind_param("i", $game_id);
+    $stmt->execute();
+    $moves = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
     echo json_encode([
         'cards' => $cards,
         'current_turn' => $current_turn,
@@ -44,7 +49,8 @@ try {
         'opponent_matches' => $opponent_matches,
         'game_over' => $game['status'] === 'finished',
         'winner' => $game['winner_id'],
-        'is_your_turn' => $current_turn == $user_id
+        'is_your_turn' => $current_turn == $user_id,
+        'moves' => $moves
     ]);
 } catch (Exception $e) {
     echo json_encode(['error' => $e->getMessage()]);

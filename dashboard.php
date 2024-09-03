@@ -10,7 +10,6 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-
 // Clean up finished games
 $sql = "DELETE FROM games WHERE status = 'finished'";
 $conn->query($sql);
@@ -29,6 +28,12 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $pending_invitations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// Define game modes
+$game_modes = [
+    'hidden_memory' => 'Hidden Memory Game',
+    'visible_memory' => '50-Card Memory Game'
+];
 ?>
 
 <!DOCTYPE html>
@@ -67,32 +72,38 @@ $pending_invitations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             <?php endforeach; ?>
         <?php endif; ?>
     </ul>
-
+    
     <h3>Invite a Player</h3>
-    <form action="invite.php" method="POST">
-        <input type="text" name="username" placeholder="Enter username" required>
-        <button type="submit">Send Invitation</button>
-    </form>
+<form id="invite-form">
+    <select name="game_mode" required>
+        <option value="hidden_memory">Hidden Memory Game</option>
+        <option value="visible_memory">50-Card Memory Game</option>
+    </select>
+    <input type="text" name="username" placeholder="Enter username" required>
+    <button type="submit">Send Invitation</button>
+</form>
+
+
 
     <a href="logout.php">Logout</a>
 
     <script>
-  function checkForUpdates() {
-    fetch('api/check_updates.php')
-        .then(response => response.text()) // Use response.text() to see the raw response
-        .then(text => {
-            console.log('Raw response:', text); // Log the raw response
-            const data = JSON.parse(text); // Parse the text manually
-            console.log('Parsed data:', data);
-            if (data.pending_invitations) {
-                updatePendingInvitations(data.pending_invitations);
-            }
-            if (data.active_games) {
-                updateActiveGames(data.active_games);
-            }
-        })
-        .catch(error => console.error('Error checking for updates:', error));
-}
+    function checkForUpdates() {
+        fetch('api/check_updates.php')
+            .then(response => response.text())
+            .then(text => {
+                console.log('Raw response:', text);
+                const data = JSON.parse(text);
+                console.log('Parsed data:', data);
+                if (data.pending_invitations) {
+                    updatePendingInvitations(data.pending_invitations);
+                }
+                if (data.active_games) {
+                    updateActiveGames(data.active_games);
+                }
+            })
+            .catch(error => console.error('Error checking for updates:', error));
+    }
 
     function updatePendingInvitations(invitations) {
         const invitationsList = document.getElementById('pending-invitations-list');
@@ -128,30 +139,30 @@ $pending_invitations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     function acceptInvitation(invitationId) {
-    fetch('api/accept_invitation.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ invitation_id: invitationId })
-    })
-    .then(response => response.text())  // Change this line from response.json() to response.text()
-    .then(text => {
-        console.log('Raw server response:', text);  // Log the raw response
-        try {
-            const data = JSON.parse(text);
-            if (data.success) {
-                alert('Invitation accepted. Redirecting to game...');
-                window.location.href = `game.php?id=${data.game_id}`;
-            } else {
-                console.error('Error accepting invitation:', data.error);
+        fetch('api/accept_invitation.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ invitation_id: invitationId })
+        })
+        .then(response => response.text())
+        .then(text => {
+            console.log('Raw server response:', text);
+            try {
+                const data = JSON.parse(text);
+                if (data.success) {
+                    alert('Invitation accepted. Redirecting to game...');
+                    window.location.href = `game.php?id=${data.game_id}`;
+                } else {
+                    console.error('Error accepting invitation:', data.error);
+                }
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
             }
-        } catch (e) {
-            console.error('Error parsing JSON:', e);
-        }
-    })
-    .catch(error => console.error('Fetch error:', error));
-}
+        })
+        .catch(error => console.error('Fetch error:', error));
+    }
 
     function declineInvitation(invitationId) {
         fetch('api/decline_invitation.php', {
@@ -172,24 +183,61 @@ $pending_invitations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         .catch(error => console.error('Error:', error));
     }
 
-    // Check for updates every 5 seconds
-    setInterval(checkForUpdates, 5000);
-
-
-    function checkForGameStart() {
-    fetch('api/check_game_start.php')
+    document.getElementById('invite-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('api/send_invitation.php', {
+            method: 'POST',
+            body: formData
+        })
         .then(response => response.json())
         .then(data => {
-            if (data.game_id) {
-                window.location.href = `game.php?id=${data.game_id}`;
+            if (data.success) {
+                alert('Invitation sent successfully!');
+            } else {
+                alert('Error sending invitation: ' + data.error);
             }
         })
         .catch(error => console.error('Error:', error));
-}
+    });
 
-// Check for game start every 5 seconds
-setInterval(checkForGameStart, 5000);
+    // Check for updates every 5 seconds
+    setInterval(checkForUpdates, 5000);
 
+    function checkForGameStart() {
+        fetch('api/check_game_start.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.game_id) {
+                    window.location.href = `game.php?id=${data.game_id}`;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+
+    document.getElementById('invite-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch('invite.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+
+
+    // Check for game start every 5 seconds
+    setInterval(checkForGameStart, 5000);
 
     // Also check immediately when the page loads
     checkForUpdates();
