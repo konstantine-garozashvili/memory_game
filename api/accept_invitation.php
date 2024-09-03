@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 require_once '../includes/db.php';
 
 header('Content-Type: application/json');
@@ -34,8 +33,8 @@ try {
     }
 
     // Create new game
-    $stmt = $conn->prepare("INSERT INTO games (player1_id, player2_id, status, current_turn_id) VALUES (?, ?, 'active', ?)");
-    $stmt->bind_param("iii", $invitation['sender_id'], $user_id, $user_id);
+    $stmt = $conn->prepare("INSERT INTO games (player1_id, player2_id, status, current_turn_id, game_mode) VALUES (?, ?, 'active', ?, ?)");
+    $stmt->bind_param("iiis", $invitation['sender_id'], $user_id, $invitation['sender_id'], $invitation['game_mode']);
     $stmt->execute();
     $game_id = $conn->insert_id;
 
@@ -45,7 +44,8 @@ try {
     $stmt->execute();
 
     // Generate and shuffle cards
-    $cards = range(1, 8);
+    $total_pairs = ($invitation['game_mode'] === 'visible_memory') ? 25 : 8;
+    $cards = range(1, $total_pairs);
     $cards = array_merge($cards, $cards);
     shuffle($cards);
 

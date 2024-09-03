@@ -8,6 +8,8 @@ define('DB_USER', 'linux-server');
 define('DB_PASS', '010203');
 define('DB_NAME', 'memory_game');
 
+
+
 // Error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

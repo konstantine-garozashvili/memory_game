@@ -1,40 +1,30 @@
-console.log("Game.js loaded");
-
 let gameBoard, flippedCards = [], playerMatches = 0, opponentMatches = 0, isYourTurn;
+let lastProcessedMoveId = 0;
+let pairedCards = new Set();
+let isFlipping = false;
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM fully loaded");
     gameBoard = document.getElementById('game-board');
-    console.log("Game board element:", gameBoard);
     initGame();
 });
 
 function initGame() {
-    console.log("Initializing game");
     fetch(`api/get_game_state.php?game_id=${gameId}`)
-        .then(response => {
-            console.log("Raw response:", response);
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log("Game state data:", data);
             if (data.error) {
                 console.error('Error:', data.error);
                 return;
             }
             renderGameBoard(data.cards);
             updateGameInfo(data);
+            processMoves(data.moves);
             startGameLoop();
         })
         .catch(error => console.error('Error:', error));
 }
 
 function renderGameBoard(cards) {
-    console.log("Rendering game board with cards:", cards);
-    if (!gameBoard) {
-        console.error("Game board element not found");
-        return;
-    }
     gameBoard.innerHTML = '';
     cards.forEach((card, index) => {
         const cardElement = document.createElement('div');
@@ -49,45 +39,33 @@ function renderGameBoard(cards) {
         cardElement.addEventListener('click', () => flipCard(cardElement, index));
         gameBoard.appendChild(cardElement);
     });
-    console.log("Game board rendered");
 }
 
-// ... rest of your game.js file ...
-
-
 function flipCard(card, index) {
-    if (!isYourTurn || flippedCards.length === 2 || card.classList.contains('flipped')) return;
+    if (!isYourTurn || isFlipping || flippedCards.length === 2 || card.classList.contains('flipped') || pairedCards.has(index)) return;
 
+    isFlipping = true;
     card.classList.add('flipped');
     flippedCards.push({ element: card, index: index });
 
-    if (flippedCards.length === 2) {
-        setTimeout(checkMatch, 1000);
-    }
+    sendFlipToServer(index)
+        .then(() => {
+            if (flippedCards.length === 2) {
+                setTimeout(() => {
+                    checkMatch();
+                }, 500);
+            } else {
+                isFlipping = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error flipping card:', error);
+            isFlipping = false;
+        });
 }
 
-function checkMatch() {
-    const [card1, card2] = flippedCards;
-    const isMatch = card1.element.querySelector('.card-back').textContent === 
-                    card2.element.querySelector('.card-back').textContent;
-
-    if (isMatch) {
-        playerMatches++;
-        document.getElementById('your-matches').textContent = playerMatches;
-    } else {
-        card1.element.classList.remove('flipped');
-        card2.element.classList.remove('flipped');
-        isYourTurn = false;
-        document.getElementById('is-your-turn').textContent = 'No';
-    }
-
-    flippedCards = [];
-    sendMoveToServer(card1.index, card2.index, isMatch);
-    checkWinCondition();
-}
-
-function sendMoveToServer(index1, index2, isMatch) {
-    fetch('api/make_move.php', {
+function sendFlipToServer(index) {
+    return fetch('api/make_move.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -95,6 +73,63 @@ function sendMoveToServer(index1, index2, isMatch) {
         body: JSON.stringify({
             game_id: gameId,
             player_id: playerId,
+            action: 'flip',
+            card_index: index
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        return data;
+    });
+}
+
+function checkMatch() {
+    const [card1, card2] = flippedCards;
+    const isMatch = card1.element.querySelector('.card-back').textContent === 
+                    card2.element.querySelector('.card-back').textContent;
+
+    sendMatchCheckToServer(card1.index, card2.index, isMatch)
+        .then(() => {
+            if (isMatch) {
+                playerMatches++;
+                document.getElementById('your-matches').textContent = playerMatches;
+                pairedCards.add(card1.index);
+                pairedCards.add(card2.index);
+                // Keep the turn for the current player
+                isYourTurn = true;
+                document.getElementById('is-your-turn').textContent = 'Yes';
+            } else {
+                setTimeout(() => {
+                    card1.element.classList.remove('flipped');
+                    card2.element.classList.remove('flipped');
+                }, 1000);
+                // Switch turn to the other player
+                isYourTurn = false;
+                document.getElementById('is-your-turn').textContent = 'No';
+            }
+            flippedCards = [];
+            isFlipping = false;
+        })
+        .catch(error => {
+            console.error('Error checking match:', error);
+            isFlipping = false;
+        });
+}
+
+
+function sendMatchCheckToServer(index1, index2, isMatch) {
+    return fetch('api/make_move.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            game_id: gameId,
+            player_id: playerId,
+            action: 'check_match',
             index1: index1,
             index2: index2,
             is_match: isMatch
@@ -103,12 +138,10 @@ function sendMoveToServer(index1, index2, isMatch) {
     .then(response => response.json())
     .then(data => {
         if (data.error) {
-            console.error('Error:', data.error);
-        } else {
-            updateGameInfo(data);
+            throw new Error(data.error);
         }
-    })
-    .catch(error => console.error('Error:', error));
+        return data;
+    });
 }
 
 function updateGameInfo(data) {
@@ -116,36 +149,11 @@ function updateGameInfo(data) {
     document.getElementById('is-your-turn').textContent = isYourTurn ? 'Yes' : 'No';
     document.getElementById('your-matches').textContent = data.your_matches;
     document.getElementById('opponent-matches').textContent = data.opponent_matches;
-}
 
-function checkWinCondition() {
-    if (playerMatches === totalPairs) {
-        sendGameOverToServer();
+    if (data.game_over) {
+        alert(data.winner === playerId ? 'You win!' : 'You lose!');
+        window.location.href = 'dashboard.php';
     }
-}
-
-function sendGameOverToServer() {
-    fetch('api/game_actions.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            action: 'game_over',
-            game_id: gameId,
-            player_id: playerId
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(`Game Over! ${data.winner === playerId ? 'You win!' : 'You lose!'}`);
-            window.location.href = 'dashboard.php';
-        } else {
-            console.error('Error determining winner:', data.error);
-        }
-    })
-    .catch(error => console.error('Error:', error));
 }
 
 function startGameLoop() {
@@ -158,13 +166,35 @@ function startGameLoop() {
                     return;
                 }
                 updateGameInfo(data);
-                if (data.game_over) {
-                    alert(data.winner === playerId ? 'You win!' : 'You lose!');
-                    window.location.href = 'dashboard.php';
-                }
+                processMoves(data.moves);
             })
             .catch(error => console.error('Error:', error));
-    }, 5000);
+    }, 1000);
+}
+
+function processMoves(moves) {
+    const unflipCards = new Set();
+
+    moves.forEach(move => {
+        if (move.id > lastProcessedMoveId) {
+            const cardElement = document.querySelector(`.card[data-index="${move.card_index}"]`);
+            if (cardElement) {
+                if (move.action === 'flip') {
+                    cardElement.classList.add('flipped');
+                } else if (move.action === 'unflip') {
+                    unflipCards.add(cardElement);
+                } else if (move.action === 'match') {
+                    cardElement.classList.add('flipped', 'matched');
+                    pairedCards.add(parseInt(move.card_index));
+                }
+            }
+            lastProcessedMoveId = move.id;
+        }
+    });
+
+    unflipCards.forEach(card => {
+        card.classList.remove('flipped');
+    });
 }
 
 initGame();
