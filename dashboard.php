@@ -10,6 +10,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+
+
 // Clean up finished games
 $sql = "DELETE FROM games WHERE status = 'finished'";
 $conn->query($sql);
@@ -45,6 +47,9 @@ $game_modes = [
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<?php if ($_SESSION['role'] === 'admin'): ?>
+        <p><a href="admin.php">Admin Dashboard</a></p>
+    <?php endif; ?>
     <h2>Welcome, <?php echo $_SESSION['username']; ?>!</h2>
     
     <h3>Active Games</h3>

@@ -265,7 +265,7 @@ $conn->close();
 
     <div class="navbar">
         <a href="admin.php">Home</a>
-        <a href="add_user.php">Add User</a>
+        <a href="dashboard.php">dashboard</a>
     </div>
 
     <div class="container">
