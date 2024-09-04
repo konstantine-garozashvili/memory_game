@@ -233,47 +233,20 @@ $conn->close();
             background-color: #0056b3;
             color: #fff;
         }
-
-        .dark-mode {
-            background-color: #2c2c2c;
-            color: #e0e0e0;
-        }
-
-        .dark-mode .navbar {
-            background-color: #343a40;
-        }
-
-        .dark-mode table {
-            background-color: #343a40;
-        }
-
-        .dark-mode th, .dark-mode td {
-            border-color: #4e4e4e;
-        }
-
-        #darkModeToggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            color: #007BFF;
-            margin-bottom: 20px;
-        }
     </style>
 </head>
 <body>
 
     <div class="navbar">
         <a href="admin.php">Home</a>
-        <a href="dashboard.php">dashboard</a>
+        <a href="dashboard.php">Dashboard</a>
     </div>
 
     <div class="container">
-        <button id="darkModeToggle"><i class="fas fa-moon"></i></button>
-
-        <a href="export_users.php" class="export-btn">Export to CSV</a>
-
         <h1>Admin Page</h1>
+
+        <!-- Export Button -->
+        <a href="export_users.php" class="export-btn">Export to CSV</a>
 
         <!-- Search bar -->
         <div class="search-bar">
@@ -347,7 +320,6 @@ $conn->close();
             const modal = document.getElementById('confirmationModal');
             const confirmButton = document.getElementById('confirmButton');
             const cancelButton = document.getElementById('cancelButton');
-            const darkModeToggle = document.getElementById('darkModeToggle');
             let confirmCallback = () => {};
 
             // Search functionality
@@ -418,11 +390,6 @@ $conn->close();
                     const userId = this.getAttribute('data-id');
                     window.location.href = `edit_user.php?id=${userId}`;
                 });
-            });
-
-            // Dark mode toggle
-            darkModeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark-mode');
             });
         });
     </script>

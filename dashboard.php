@@ -10,8 +10,6 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-
-
 // Clean up finished games
 $sql = "DELETE FROM games WHERE status = 'finished'";
 $conn->query($sql);
@@ -44,53 +42,180 @@ $game_modes = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Memory Card Game</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        li button {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+
+        li button:hover {
+            background-color: #0056b3;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        form select,
+        form input[type="text"],
+        form button {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        form select,
+        form input[type="text"] {
+            width: calc(100% - 150px); /* Adjust width to fit button */
+            display: inline-block;
+        }
+
+        form button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        form button:hover {
+            background-color: #218838;
+        }
+
+        a {
+            color: #007BFF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-<?php if ($_SESSION['role'] === 'admin'): ?>
-        <p><a href="admin.php">Admin Dashboard</a></p>
-    <?php endif; ?>
-    <h2>Welcome, <?php echo $_SESSION['username']; ?>!</h2>
-    
-    <h3>Active Games</h3>
-    <ul id="active-games-list">
-        <?php if (empty($active_games)): ?>
-            <li>No active games.</li>
-        <?php else: ?>
-            <?php foreach ($active_games as $game): ?>
-                <li><a href="game.php?id=<?php echo $game['id']; ?>">Game #<?php echo $game['id']; ?></a></li>
-            <?php endforeach; ?>
+
+    <div class="navbar">
+        <?php if ($_SESSION['role'] === 'admin'): ?>
+            <a href="admin.php">Admin Dashboard</a>
         <?php endif; ?>
-    </ul>
+        <a href="logout.php">Logout</a>
+    </div>
 
-    <h3>Pending Invitations</h3>
-    <ul id="pending-invitations-list">
-        <?php if (empty($pending_invitations)): ?>
-            <li>No pending invitations.</li>
-        <?php else: ?>
-            <?php foreach ($pending_invitations as $invitation): ?>
-                <li>
-                    Invitation from <?php echo $invitation['username']; ?>
-                    <button onclick="acceptInvitation(<?php echo $invitation['id']; ?>)">Accept</button>
-                    <button onclick="declineInvitation(<?php echo $invitation['id']; ?>)">Decline</button>
-                </li>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </ul>
-    
-    <h3>Invite a Player</h3>
-<form id="invite-form">
-    <select name="game_mode" required>
-        <option value="hidden_memory">Hidden Memory Game</option>
-        <option value="visible_memory">50-Card Memory Game</option>
-    </select>
-    <input type="text" name="username" placeholder="Enter username" required>
-    <button type="submit">Send Invitation</button>
-</form>
+    <div class="container">
+        <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
+        
+        <h3>Active Games</h3>
+        <ul id="active-games-list">
+            <?php if (empty($active_games)): ?>
+                <li>No active games.</li>
+            <?php else: ?>
+                <?php foreach ($active_games as $game): ?>
+                    <li><a href="game.php?id=<?php echo htmlspecialchars($game['id']); ?>">Game #<?php echo htmlspecialchars($game['id']); ?></a></li>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </ul>
 
-
-
-    <a href="logout.php">Logout</a>
+        <h3>Pending Invitations</h3>
+        <ul id="pending-invitations-list">
+            <?php if (empty($pending_invitations)): ?>
+                <li>No pending invitations.</li>
+            <?php else: ?>
+                <?php foreach ($pending_invitations as $invitation): ?>
+                    <li>
+                        Invitation from <?php echo htmlspecialchars($invitation['username']); ?>
+                        <button onclick="acceptInvitation(<?php echo $invitation['id']; ?>)">Accept</button>
+                        <button onclick="declineInvitation(<?php echo $invitation['id']; ?>)">Decline</button>
+                    </li>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </ul>
+        
+        <h3>Invite a Player</h3>
+        <form id="invite-form">
+            <select name="game_mode" required>
+                <option value="hidden_memory">Hidden Memory Game</option>
+                <option value="visible_memory">50-Card Memory Game</option>
+            </select>
+            <input type="text" name="username" placeholder="Enter username" required>
+            <button type="submit">Send Invitation</button>
+        </form>
+    </div>
 
     <script>
     function checkForUpdates() {
@@ -219,27 +344,6 @@ $game_modes = [
             })
             .catch(error => console.error('Error:', error));
     }
-
-
-    document.getElementById('invite-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    fetch('invite.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-        } else {
-            alert('Error: ' + data.error);
-        }
-    })
-    .catch(error => console.error('Error:', error));
-});
-
-
 
     // Check for game start every 5 seconds
     setInterval(checkForGameStart, 5000);
