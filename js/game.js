@@ -53,7 +53,7 @@ function flipCard(card, index) {
             if (flippedCards.length === 2) {
                 setTimeout(() => {
                     checkMatch();
-                }, 500);
+                }, 1500);
             } else {
                 isFlipping = false;
             }
@@ -105,7 +105,7 @@ function checkMatch() {
                 setTimeout(() => {
                     card1.element.classList.remove('flipped');
                     card2.element.classList.remove('flipped');
-                }, 1000);
+                }, 1500);
                 // Switch turn to the other player
                 isYourTurn = false;
                 document.getElementById('is-your-turn').textContent = 'No';
