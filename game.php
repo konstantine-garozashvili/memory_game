@@ -76,15 +76,18 @@ $game_mode_name = getGameModeName($game_mode);
     <p>Your username: <?php echo htmlspecialchars($current_user['username']); ?></p>
     <p>Game Mode: <?php echo htmlspecialchars($game_mode_name); ?></p>
 
-    <div id="game-board" class="game-board">
-        <!-- Game board will be populated by JavaScript -->
-    </div>
 
     <div id="game-info">
         <p>Your turn: <span id="is-your-turn">Waiting...</span></p>
         <p>Your matches: <span id="your-matches">0</span></p>
         <p>Opponent's matches: <span id="opponent-matches">0</span></p>
     </div>
+
+    <div id="game-board" class="game-board">
+        <!-- Game board will be populated by JavaScript -->
+    </div>
+
+
 
     <script>
     const gameId = <?php echo json_encode($game_id); ?>;
