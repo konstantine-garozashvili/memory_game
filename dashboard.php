@@ -1,14 +1,19 @@
 <?php
+// Start the session at the beginning of the file
+session_start();
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
+// Ensure that the session variables are set
+if (!isset($_SESSION['username']) || !isset($_SESSION['role'])) {
+    // Redirect to login or show an error message
+    header('Location: login.php');
     exit();
-}
+}}
+
 
 // Clean up finished games
 $sql = "DELETE FROM games WHERE status = 'finished'";
@@ -34,6 +39,11 @@ $game_modes = [
     'hidden_memory' => 'Hidden Memory Game',
     'visible_memory' => '50-Card Memory Game'
 ];
+
+// Fetch user data and active games here
+// Example:
+$active_games = []; // Replace with actual data fetching
+$pending_invitations = []; // Replace with actual data fetching
 ?>
 
 <!DOCTYPE html>
@@ -166,6 +176,87 @@ $game_modes = [
             color: #0056b3;
             text-decoration: underline;
         }
+
+        /* Styles for chat */
+        #chat-container {
+            display: none; /* Hidden by default */
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            max-height: 400px;
+            background-color: #f7f7f7;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        #chat-messages {
+            height: 300px;
+            overflow-y: scroll;
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            background: white;
+        }
+        #chat-form {
+            display: flex;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f7f7f7;
+        }
+        #chat-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #chat-form button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007BFF;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #chat-form button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styles for chat icon */
+        #chat-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: #007BFF;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        #chat-icon i {
+            font-size: 24px;
+        }
+
+        .notification {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -215,9 +306,26 @@ $game_modes = [
             <input type="text" name="username" placeholder="Enter username" required>
             <button type="submit">Send Invitation</button>
         </form>
+        
+        <!-- Chat Icon -->
+        <div id="chat-icon">
+            <i class="fas fa-comment-dots"></i>
+            <span id="chat-notification" class="notification"></span>
+        </div>
+
+        <!-- Chat Section -->
+        <div id="chat-container">
+            <div id="chat-messages"></div>
+            <form id="chat-form">
+                <input type="text" id="chat-input" placeholder="Type your message here..." autocomplete="off" />
+                <button type="submit">Send</button>
+            </form>
+        </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+    // Existing code for checking updates and handling invitations
     function checkForUpdates() {
         fetch('api/check_updates.php')
             .then(response => response.text())
@@ -230,6 +338,9 @@ $game_modes = [
                 }
                 if (data.active_games) {
                     updateActiveGames(data.active_games);
+                }
+                if (data.unread_messages) {
+                    updateChatNotification(data.unread_messages);
                 }
             })
             .catch(error => console.error('Error checking for updates:', error));
@@ -266,6 +377,13 @@ $game_modes = [
                 gamesList.appendChild(listItem);
             });
         }
+        console.log('Updated active games:', games);
+    }
+
+    function updateChatNotification(count) {
+        const notification = document.getElementById('chat-notification');
+        notification.textContent = count;
+        notification.style.display = count > 0 ? 'flex' : 'none';
     }
 
     function acceptInvitation(invitationId) {
@@ -316,7 +434,7 @@ $game_modes = [
     document.getElementById('invite-form').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
-        fetch('api/send_invitation.php', {
+        fetch('invite.php', {
             method: 'POST',
             body: formData
         })
@@ -350,6 +468,49 @@ $game_modes = [
 
     // Also check immediately when the page loads
     checkForUpdates();
+
+    // Chat Script
+    // Function to fetch and display messages
+    function fetchMessages() {
+        $.ajax({
+            url: 'fetch_messages.php',
+            method: 'GET',
+            success: function(data) {
+                const messages = JSON.parse(data);
+                let chatContent = '';
+                messages.forEach(function(msg) {
+                    chatContent += '<div><strong>' + msg.username + ':</strong> ' + msg.message + 
+                                   ' <small>(' + msg.timestamp + ')</small></div>';
+                });
+                $('#chat-messages').html(chatContent);
+            }
+        });
+    }
+
+    // Fetch messages every 2 seconds
+    setInterval(fetchMessages, 2000);
+
+    // Send message on form submission
+    $('#chat-form').submit(function(e) {
+        e.preventDefault();
+        const message = $('#chat-input').val();
+        if (message.trim() !== '') {
+            $.ajax({
+                url: 'send_message.php',
+                method: 'POST',
+                data: { message: message },
+                success: function(response) {
+                    $('#chat-input').val('');
+                    fetchMessages();
+                }
+            });
+        }
+    });
+
+    // Toggle chat container visibility
+    $('#chat-icon').click(function() {
+        $('#chat-container').toggle();
+    });
     </script>
 </body>
 </html>
