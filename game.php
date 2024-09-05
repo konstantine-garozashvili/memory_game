@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/db.php';
+require_once 'includes/db.php';  // Assurez-vous que ce fichier contient les informations de connexion à la base de données
 require_once 'includes/functions.php';
 
 if (!isset($_SESSION['user_id'])) {
@@ -7,13 +7,23 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+// Récupérez l'ID du jeu depuis les paramètres GET ou définissez une valeur par défaut
 $game_id = $_GET['id'] ?? 0;
 $user_id = $_SESSION['user_id'];
 
-// Fetch game details
+// Vérifiez que l'ID du jeu est valide
+if ($game_id <= 0) {
+    echo "Jeu invalide.";
+    exit();
+}
+
+// Connexion à la base de données
+$conn = new mysqli('localhost', 'username', 'password', 'memory_game');
+if ($conn->connect_error) {
+    die("Échec de la connexion : " . $conn->connect_error);
+}
+
+// Récupérez les détails du jeu
 $sql = "SELECT * FROM games WHERE id = ? AND (player1_id = ? OR player2_id = ?)";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("iii", $game_id, $user_id, $user_id);
@@ -21,46 +31,34 @@ $stmt->execute();
 $game = $stmt->get_result()->fetch_assoc();
 
 if (!$game) {
-    header("Location: dashboard.php");
+    echo "Jeu non trouvé ou vous n'êtes pas autorisé à voir ce jeu.";
     exit();
 }
 
-$is_player1 = ($game['player1_id'] == $user_id);
-$opponent_id = $is_player1 ? $game['player2_id'] : $game['player1_id'];
-
-$sql = "SELECT username FROM users WHERE id = ?";
+// Récupérez les cartes pour ce jeu
+$sql = "SELECT id, card_value, is_revealed FROM cards WHERE game_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $opponent_id);
+$stmt->bind_param("i", $game_id);
 $stmt->execute();
-$opponent = $stmt->get_result()->fetch_assoc();
+$cards = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Fetch current user's username
-$sql = "SELECT username FROM users WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$current_user = $stmt->get_result()->fetch_assoc();
-
-// Get the game mode
-$game_mode = $game['game_mode'];
-
-// Define the number of pairs based on the game mode
-$total_pairs = ($game_mode === 'visible_memory') ? 25 : 8; // 50 cards for visible memory, 16 for hidden
-
-// Function to get a human-readable game mode name
-function getGameModeName($mode) {
-    switch ($mode) {
-        case 'hidden_memory':
-            return 'Hidden Memory Game';
-        case 'visible_memory':
-            return '50-Card Memory Game';
-        default:
-            return 'Unknown Game Mode';
-    }
+// Affichez les cartes pour débogage
+echo "<h2>Détails des Cartes pour le Jeu #$game_id</h2>";
+echo "<table border='1'>";
+echo "<tr><th>ID</th><th>Valeur</th><th>Révélée</th></tr>";
+foreach ($cards as $card) {
+    echo "<tr>";
+    echo "<td>" . htmlspecialchars($card['id']) . "</td>";
+    echo "<td>" . htmlspecialchars($card['card_value']) . "</td>";
+    echo "<td>" . ($card['is_revealed'] ? 'Oui' : 'Non') . "</td>";
+    echo "</tr>";
 }
+echo "</table>";
 
-$game_mode_name = getGameModeName($game_mode);
+// Fermez la connexion à la base de données
+$conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -89,14 +87,17 @@ $game_mode_name = getGameModeName($game_mode);
 
 
 
-    <script>
+<script>
     const gameId = <?php echo json_encode($game_id); ?>;
     const playerId = <?php echo json_encode($user_id); ?>;
     const isPlayer1 = <?php echo json_encode($is_player1); ?>;
     const totalPairs = <?php echo json_encode($total_pairs); ?>;
     const opponentName = <?php echo json_encode($opponent['username']); ?>;
     const gameMode = <?php echo json_encode($game_mode); ?>;
-    </script>
+    const cards = <?php echo json_encode($cards); ?>;
+    const firstRevealedCard = <?php echo json_encode($first_revealed_card); ?>;
+</script>
+
     <script src="js/game.js"></script>
 </body>
 </html>

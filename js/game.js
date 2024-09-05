@@ -3,9 +3,24 @@ let lastProcessedMoveId = 0;
 let pairedCards = new Set();
 let isFlipping = false;
 
-document.addEventListener('DOMContentLoaded', () => {
-    gameBoard = document.getElementById('game-board');
-    initGame();
+document.addEventListener("DOMContentLoaded", () => {
+    const gameBoard = document.getElementById('game-board');
+
+    // Create card elements based on card data
+    cards.forEach(card => {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'card';
+
+        if (card.is_revealed || !isPlayer1) {
+            cardElement.textContent = card.card_value; // Display the card value if revealed
+        } else {
+            cardElement.textContent = 'Hidden'; // Display 'Hidden' or similar for unrevealed cards
+        }
+
+        gameBoard.appendChild(cardElement);
+    });
+
+    // Optionally, you can add logic to handle user interaction
 });
 
 function initGame() {
