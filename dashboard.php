@@ -66,6 +66,7 @@ $pending_invitations = []; // Replace with actual data fetching
 
     <div class="container">
         <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
+        <a href="scoreboard.php">View Scoreboard</a>
         
         <h3>Active Games</h3>
         <ul id="active-games-list">

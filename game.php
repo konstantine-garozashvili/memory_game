@@ -13,6 +13,16 @@ ini_set('display_errors', 1);
 $game_id = $_GET['id'] ?? 0;
 $user_id = $_SESSION['user_id'];
 
+// Delete game if requested
+if (isset($_GET['delete_game_id'])) {
+    $delete_game_id = $_GET['delete_game_id'];
+    $stmt = $conn->prepare("DELETE FROM games WHERE id = ?");
+    $stmt->bind_param("i", $delete_game_id);
+    $stmt->execute();
+    header("Location: dashboard.php");
+    exit();
+}
+
 // Fetch game details
 $sql = "SELECT * FROM games WHERE id = ? AND (player1_id = ? OR player2_id = ?)";
 $stmt = $conn->prepare($sql);
@@ -76,7 +86,6 @@ $game_mode_name = getGameModeName($game_mode);
     <p>Your username: <?php echo htmlspecialchars($current_user['username']); ?></p>
     <p>Game Mode: <?php echo htmlspecialchars($game_mode_name); ?></p>
 
-
     <div id="game-info">
         <p>Your turn: <span id="is-your-turn">Waiting...</span></p>
         <p>Your matches: <span id="your-matches">0</span></p>
@@ -86,8 +95,6 @@ $game_mode_name = getGameModeName($game_mode);
     <div id="game-board" class="game-board">
         <!-- Game board will be populated by JavaScript -->
     </div>
-
-
 
     <script>
     const gameId = <?php echo json_encode($game_id); ?>;

@@ -1,7 +1,11 @@
 <?php
 if (session_status() == PHP_SESSION_NONE) {
-    session_start();
+    session_start([
+        'cookie_httponly' => true,
+        'cookie_secure' => true,  // Use true in production with HTTPS
+    ]);
 }
+
 $servername = "localhost";  // Adresse IP de votre serveur MariaDB
 $username = "root";   // Nom d'utilisateur MariaDB
 $password = "";         // Mot de passe MariaDB

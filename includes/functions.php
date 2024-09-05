@@ -1,7 +1,8 @@
 <?php
 function sanitize_input($input) {
-    return htmlspecialchars(strip_tags(trim($input)));
+    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
+
 
 function generate_game_board() {
     $cards = range(1, 8);

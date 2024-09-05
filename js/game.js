@@ -77,7 +77,11 @@ function sendFlipToServer(index) {
             card_index: index
         }),
     })
-    .then(response => response.json())
+    .then(response => response.text())
+    .then(text => {
+        console.log('Raw server response:', text);  // Log the raw response
+        return JSON.parse(text);
+    })
     .then(data => {
         if (data.error) {
             throw new Error(data.error);
@@ -92,13 +96,12 @@ function checkMatch() {
                     card2.element.querySelector('.card-back').textContent;
 
     sendMatchCheckToServer(card1.index, card2.index, isMatch)
-        .then(() => {
+        .then((data) => {
             if (isMatch) {
                 playerMatches++;
                 document.getElementById('your-matches').textContent = playerMatches;
                 pairedCards.add(card1.index);
                 pairedCards.add(card2.index);
-                // Keep the turn for the current player
                 isYourTurn = true;
                 document.getElementById('is-your-turn').textContent = 'Yes';
             } else {
@@ -106,19 +109,21 @@ function checkMatch() {
                     card1.element.classList.remove('flipped');
                     card2.element.classList.remove('flipped');
                 }, 1500);
-                // Switch turn to the other player
                 isYourTurn = false;
                 document.getElementById('is-your-turn').textContent = 'No';
             }
             flippedCards = [];
             isFlipping = false;
+
+            if (data.game_status && data.game_status.game_over) {
+                handleGameOver(data.game_status);
+            }
         })
         .catch(error => {
             console.error('Error checking match:', error);
             isFlipping = false;
         });
 }
-
 
 function sendMatchCheckToServer(index1, index2, isMatch) {
     return fetch('api/make_move.php', {
@@ -135,7 +140,11 @@ function sendMatchCheckToServer(index1, index2, isMatch) {
             is_match: isMatch
         }),
     })
-    .then(response => response.json())
+    .then(response => response.text())
+    .then(text => {
+        console.log('Raw server response:', text);  // Log the raw response
+        return JSON.parse(text);
+    })
     .then(data => {
         if (data.error) {
             throw new Error(data.error);
@@ -150,10 +159,22 @@ function updateGameInfo(data) {
     document.getElementById('your-matches').textContent = data.your_matches;
     document.getElementById('opponent-matches').textContent = data.opponent_matches;
 
-    if (data.game_over) {
-        alert(data.winner === playerId ? 'You win!' : 'You lose!');
-        window.location.href = 'dashboard.php';
+    if (data.game_status && data.game_status.game_over) {
+        handleGameOver(data.game_status);
     }
+}
+
+function handleGameOver(gameStatus) {
+    let message;
+    if (gameStatus.is_draw) {
+        message = "It's a draw!";
+    } else if (gameStatus.winner_id === playerId) {
+        message = "You win!";
+    } else {
+        message = "You lose!";
+    }
+    alert(message);
+    window.location.href = 'scoreboard.php?game_id=' + gameId;
 }
 
 function startGameLoop() {
