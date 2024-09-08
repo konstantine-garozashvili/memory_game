@@ -150,7 +150,7 @@ function updateGameInfo(data) {
     document.getElementById('your-matches').textContent = data.your_matches;
     document.getElementById('opponent-matches').textContent = data.opponent_matches;
 
-    const winConditionPairs = gameMode === 'visible_memory' ? 25 : 8; // 50 cards = 25 pairs for visible memory, 16 cards = 8 pairs for hidden memory
+    const winConditionPairs = gameMode === 'visible_memory' ? 25 : 9; // 50 cards = 25 pairs for visible memory, 16 cards = 8 pairs for hidden memory
 
     if (data.game_over) {
         alert(data.winner === playerId ? 'You win!' : 'You lose!');
