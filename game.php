@@ -45,7 +45,7 @@ $current_user = $stmt->get_result()->fetch_assoc();
 $game_mode = $game['game_mode'];
 
 // Define the number of pairs based on the game mode
-$total_pairs = ($game_mode === 'visible_memory') ? 25 : 8; // 50 cards for visible memory, 16 for hidden
+$total_pairs = ($game_mode === 'visible_memory') ? 25 : 9; // 50 cards for visible memory, 16 for hidden
 
 // Function to get a human-readable game mode name
 function getGameModeName($mode) {

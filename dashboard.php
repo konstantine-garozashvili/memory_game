@@ -5,6 +5,8 @@ session_start();
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
 
+
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
 // Ensure that the session variables are set
@@ -15,17 +17,19 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['role'])) {
 }}
 
 
-// Clean up finished games
-$sql = "DELETE FROM games WHERE status = 'finished'";
-$conn->query($sql);
-$user_id = $_SESSION['user_id'];
-
 // Fetch active games
 $sql = "SELECT * FROM games WHERE (player1_id = ? OR player2_id = ?) AND status = 'active'";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ii", $user_id, $user_id);
 $stmt->execute();
 $active_games = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// Clean up finished games
+$sql = "DELETE FROM games WHERE status = 'finished'";
+$conn->query($sql);
+$user_id = $_SESSION['user_id'];
+
+
 
 // Fetch pending invitations
 $sql = "SELECT i.*, u.username FROM invitations i JOIN users u ON i.sender_id = u.id WHERE i.receiver_id = ? AND i.status = 'pending'";
@@ -40,10 +44,7 @@ $game_modes = [
     'visible_memory' => '50-Card Memory Game'
 ];
 
-// Fetch user data and active games here
-// Example:
-$active_games = []; // Replace with actual data fetching
-$pending_invitations = []; // Replace with actual data fetching
+
 ?>
 
 <!DOCTYPE html>

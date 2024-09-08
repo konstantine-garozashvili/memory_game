@@ -12,6 +12,12 @@ if (!isset($_SESSION['user_id']) || !isset($_GET['game_id'])) {
 $user_id = $_SESSION['user_id'];
 $game_id = $_GET['game_id'];
 
+function update_game_status($conn, $game_id, $winner_id) {
+    $stmt = $conn->prepare("UPDATE games SET status = 'finished', winner_id = ? WHERE id = ?");
+    $stmt->bind_param("ii", $winner_id, $game_id);
+    $stmt->execute();
+}
+
 try {
     // Fetch game details
     $stmt = $conn->prepare("SELECT * FROM games WHERE id = ? AND (player1_id = ? OR player2_id = ?)");
@@ -41,6 +47,17 @@ try {
     $stmt->bind_param("i", $game_id);
     $stmt->execute();
     $moves = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+    // Check if the game is over
+    $total_pairs = ($game['game_mode'] === 'visible_memory') ? 25 : 8;
+    $total_matches = $your_matches + $opponent_matches;
+
+    if ($total_matches == $total_pairs && $game['status'] != 'finished') {
+        $winner_id = ($your_matches > $opponent_matches) ? $game['player1_id'] : $game['player2_id'];
+        update_game_status($conn, $game_id, $winner_id);
+        $game['status'] = 'finished';
+        $game['winner_id'] = $winner_id;
+    }
 
     echo json_encode([
         'cards' => $cards,
