@@ -49,7 +49,7 @@ try {
     $moves = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
     // Check if the game is over
-    $total_pairs = ($game['game_mode'] === 'visible_memory') ? 25 : 8;
+    $total_pairs = ($game['game_mode'] === 'visible_memory') ? 25 : 9;
     $total_matches = $your_matches + $opponent_matches;
 
     if ($total_matches == $total_pairs && $game['status'] != 'finished') {
