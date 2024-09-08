@@ -44,7 +44,7 @@ try {
     $stmt->execute();
 
     // Generate and shuffle cards
-    $total_pairs = ($invitation['game_mode'] === 'visible_memory') ? 25 : 8;
+    $total_pairs = ($invitation['game_mode'] === 'visible_memory') ? 25 : 9;
     $cards = range(1, $total_pairs);
     $cards = array_merge($cards, $cards);
     shuffle($cards);
