@@ -21,11 +21,13 @@ if ($user_id) {
 ?>
 
 <div class="navbar">
-    <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture">
+    <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture"> 
+   
     <div>
         <?php if ($_SESSION['role'] === 'admin'): ?>
             <a href="admin.php">Admin Dashboard</a>
         <?php endif; ?>
+        <a href="dashboard.php">Dashboard</a>
         <a href="profile.php">Profile</a>
         <a href="logout.php">Logout</a>
     </div>
