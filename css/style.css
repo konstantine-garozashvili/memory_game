@@ -158,12 +158,13 @@ a:hover {
     border-radius: 5px;
 }
 #chat-form button {
-    padding: 10px 20px;
+    
     border: none;
     background-color: #007BFF;
     color: #fff;
     border-radius: 5px;
     cursor: pointer;
+    height: 40px;
 }
 #chat-form button:hover {
     background-color: #0056b3;
@@ -197,7 +198,7 @@ a:hover {
     right: -5px;
     width: 20px;
     height: 20px;
-    background-color: red;
+    
     color: white;
     border-radius: 50%;
     display: flex;
