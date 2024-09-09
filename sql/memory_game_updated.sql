@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 05, 2024 at 07:26 AM
+-- Generation Time: Sep 09, 2024 at 12:43 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -24,33 +24,23 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `chat`
---
-
-CREATE TABLE `chat` (
-  `id` int NOT NULL,
-  `user_id` int DEFAULT NULL,
-  `message` text,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `chat`
---
-
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `chat_messages`
 --
 
 CREATE TABLE `chat_messages` (
   `id` int NOT NULL,
   `user_id` int NOT NULL,
-  `message` text NOT NULL,
+  `message` text COLLATE utf8mb4_general_ci NOT NULL,
   `timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `chat_messages`
+--
+
+INSERT INTO `chat_messages` (`id`, `user_id`, `message`, `timestamp`) VALUES
+(8, 17, 'salut', '2024-09-09 11:56:10'),
+(9, 16, 'cava?', '2024-09-09 11:56:14');
 
 -- --------------------------------------------------------
 
@@ -86,9 +76,6 @@ CREATE TABLE `game_moves` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `game_moves`
---
 -- --------------------------------------------------------
 
 --
@@ -114,25 +101,22 @@ CREATE TABLE `users` (
   `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `role` enum('user','admin') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'user',
-  `last_login` timestamp NULL DEFAULT NULL
+  `role` enum('user','admin') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'user',
+  `last_login` timestamp NULL DEFAULT NULL,
+  `profile_picture` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'uploads/default_profile.png'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
+INSERT INTO `users` (`id`, `username`, `password`, `email`, `role`, `last_login`, `profile_picture`) VALUES
+(16, 'abdelaa', '$2y$10$TX1jKbr84qxyJYlg3TNFhumJ5gk.C0HGkryBQ9ZJX8EXcCNdNR8u.', 'abdela@gmail.com', 'user', '2024-09-09 12:08:00', NULL),
+(18, 'konstantine', '$2y$10$0w1IfMnEALTa1Fl/joWhNejfMJDHkyeF7wd8OId2KyyOp0oXLVzma', 'garozashvili25@gmail.com', 'user', '2024-09-09 12:42:21', 'uploads/Screenshot 2024-08-22 131722.png');
 
 --
 -- Indexes for dumped tables
 --
-
---
--- Indexes for table `chat`
---
-ALTER TABLE `chat`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `chat_messages`
@@ -175,50 +159,38 @@ ALTER TABLE `users`
 --
 
 --
--- AUTO_INCREMENT for table `chat`
---
-ALTER TABLE `chat`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
-
---
 -- AUTO_INCREMENT for table `chat_messages`
 --
 ALTER TABLE `chat_messages`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `games`
 --
 ALTER TABLE `games`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `game_moves`
 --
 ALTER TABLE `game_moves`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1042;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1472;
 
 --
 -- AUTO_INCREMENT for table `invitations`
 --
 ALTER TABLE `invitations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `chat`
---
-ALTER TABLE `chat`
-  ADD CONSTRAINT `chat_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
 -- Constraints for table `games`
