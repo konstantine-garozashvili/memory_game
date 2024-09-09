@@ -122,7 +122,7 @@ $game_modes = [
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-    // Existing code for checking updates and handling invitations
+    
     function checkForUpdates() {
         fetch('api/check_updates.php')
             .then(response => response.text())
