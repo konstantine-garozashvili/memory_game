@@ -68,6 +68,7 @@ $game_mode_name = getGameModeName($game_mode);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game #<?php echo $game_id; ?> - <?php echo htmlspecialchars($game_mode_name); ?></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -87,26 +88,25 @@ $game_mode_name = getGameModeName($game_mode);
     <div id="game-board" class="game-board">
         <!-- Game board will be populated by JavaScript -->
     </div>
+ <!-- Chat Icon -->
+ <div id="chat-icon">
+            <i class="fas fa-comment-dots"></i>
+            <span id="chat-notification" class="notification"></span>
+        </div>
 
-    <!-- Chat Icon -->
-    <div id="chat-icon">
-        <i class="fas fa-comment-dots"></i>
-        <span id="chat-notification" class="notification"></span>
-    </div>
+        <!-- Chat Section -->
+        <div id="chat-container">
+            <div id="chat-messages"></div>
+            <form id="chat-form">
+                <input type="text" id="chat-input" placeholder="Type your message here..." autocomplete="off" />
+                <button type="submit">Send</button>
+            </form>
+        </div>
 
-    <!-- Chat Section -->
-    <div id="chat-container">
-       <div id="chat-messages"></div>
-        <form id="chat-form">
-            <input type="text" id="chat-input" placeholder="Type your message here..." autocomplete="off" />
-            <button type="submit">Send</button>
-        </form>
-    </div>
-
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-         function fetchMessages() {
+
+function fetchMessages() {
         $.ajax({
             url: 'fetch_messages.php',
             method: 'GET',
@@ -121,6 +121,7 @@ $game_mode_name = getGameModeName($game_mode);
             }
         });
     }
+
 
     // Fetch messages every 2 seconds
     setInterval(fetchMessages, 2000);
@@ -146,7 +147,7 @@ $game_mode_name = getGameModeName($game_mode);
     $('#chat-icon').click(function() {
         $('#chat-container').toggle();
     });
-    
+
     const gameId = <?php echo json_encode($game_id); ?>;
     const playerId = <?php echo json_encode($user_id); ?>;
     const isPlayer1 = <?php echo json_encode($is_player1); ?>;
