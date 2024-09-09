@@ -5,17 +5,28 @@ session_start();
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
 
-
-
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Fetch user profile picture
+$sql = "SELECT profile_picture FROM users WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+$profile_picture = $user['profile_picture'] ?: 'uploads/default_profile.png';
+
 // Ensure that the session variables are set
 if (!isset($_SESSION['username']) || !isset($_SESSION['role'])) {
     // Redirect to login or show an error message
     header('Location: login.php');
     exit();
-}}
-
+}
 
 // Fetch active games
 $sql = "SELECT * FROM games WHERE (player1_id = ? OR player2_id = ?) AND status = 'active'";
@@ -27,9 +38,6 @@ $active_games = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 // Clean up finished games
 $sql = "DELETE FROM games WHERE status = 'finished'";
 $conn->query($sql);
-$user_id = $_SESSION['user_id'];
-
-
 
 // Fetch pending invitations
 $sql = "SELECT i.*, u.username FROM invitations i JOIN users u ON i.sender_id = u.id WHERE i.receiver_id = ? AND i.status = 'pending'";
@@ -44,7 +52,6 @@ $game_modes = [
     'visible_memory' => '50-Card Memory Game'
 ];
 
-
 ?>
 
 <!DOCTYPE html>
@@ -55,15 +62,22 @@ $game_modes = [
     <title>Dashboard - Memory Card Game</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="navbar">
-        <?php if ($_SESSION['role'] === 'admin'): ?>
-            <a href="admin.php">Admin Dashboard</a>
-        <?php endif; ?>
-        <a href="logout.php">Logout</a>
-    </div>
+<?php include 'includes/navbar.php'; ?>
 
     <div class="container">
         <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
