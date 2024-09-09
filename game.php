@@ -70,6 +70,7 @@ $game_mode_name = getGameModeName($game_mode);
     <title>Game #<?php echo $game_id; ?> - <?php echo htmlspecialchars($game_mode_name); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <h2>Game #<?php echo $game_id; ?> - <?php echo htmlspecialchars($game_mode_name); ?></h2>
@@ -121,6 +122,7 @@ function fetchMessages() {
         });
     }
 
+
     // Fetch messages every 2 seconds
     setInterval(fetchMessages, 2000);
 
@@ -145,6 +147,7 @@ function fetchMessages() {
     $('#chat-icon').click(function() {
         $('#chat-container').toggle();
     });
+
     const gameId = <?php echo json_encode($game_id); ?>;
     const playerId = <?php echo json_encode($user_id); ?>;
     const isPlayer1 = <?php echo json_encode($is_player1); ?>;
