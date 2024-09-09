@@ -150,18 +150,28 @@ function updateGameInfo(data) {
     document.getElementById('your-matches').textContent = data.your_matches;
     document.getElementById('opponent-matches').textContent = data.opponent_matches;
 
-    const winConditionPairs = gameMode === 'visible_memory' ? 25 : 9; // 50 cards = 25 pairs for visible memory, 16 cards = 8 pairs for hidden memory
+    const winConditionPairs = gameMode === 'visible_memory' ? 25 : 9;
 
-    if (data.game_over) {
-        alert(data.winner === playerId ? 'You win!' : 'You lose!');
-        window.location.href = 'dashboard.php';
-    } else if (data.your_matches + data.opponent_matches === winConditionPairs) {
-        // Notify the game is over
-        alert(data.your_matches > data.opponent_matches ? 'You win!' : 'You lose!');
-        window.location.href = 'dashboard.php';
+    if (data.game_over || data.your_matches + data.opponent_matches === winConditionPairs) {
+        let winMessage;
+        if (data.your_matches > data.opponent_matches) {
+            winMessage = 'You win!';
+        } else if (data.your_matches < data.opponent_matches) {
+            winMessage = 'You lose!';
+        } else {
+            winMessage = 'It\'s a tie!';
+        }
+        
+        // Use a flag to ensure the alert is shown only once
+        if (!this.gameEndAlertShown) {
+            alert(winMessage);
+            this.gameEndAlertShown = true;
+            setTimeout(() => {
+                window.location.href = 'dashboard.php';
+            }, 100);
+        }
     }
 }
-
 function startGameLoop() {
     setInterval(() => {
         fetch(`api/get_game_state.php?game_id=${gameId}`)
