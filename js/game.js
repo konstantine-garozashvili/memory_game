@@ -150,7 +150,7 @@ function updateGameInfo(data) {
     document.getElementById('your-matches').textContent = data.your_matches;
     document.getElementById('opponent-matches').textContent = data.opponent_matches;
 
-    const winConditionPairs = gameMode === 'visible_memory' ? 25 : 9; // 50 cards = 25 pairs for visible memory, 18 cards = 9 pairs for hidden memory
+    const winConditionPairs = gameMode === 'visible_memory' ? 25 : 9;
 
     if (data.game_over || data.your_matches + data.opponent_matches === winConditionPairs) {
         let winMessage;
@@ -161,11 +161,17 @@ function updateGameInfo(data) {
         } else {
             winMessage = 'It\'s a tie!';
         }
-        alert(winMessage);
-        window.location.href = 'dashboard.php';
+        
+        // Use a flag to ensure the alert is shown only once
+        if (!this.gameEndAlertShown) {
+            alert(winMessage);
+            this.gameEndAlertShown = true;
+            setTimeout(() => {
+                window.location.href = 'dashboard.php';
+            }, 100);
+        }
     }
 }
-
 function startGameLoop() {
     setInterval(() => {
         fetch(`api/get_game_state.php?game_id=${gameId}`)
