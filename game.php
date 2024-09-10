@@ -86,6 +86,7 @@ $game_mode_name = getGameModeName($game_mode);
         <p>Your turn: <span id="is-your-turn">Waiting...</span></p>
         <p>Your matches: <span id="your-matches">0</span></p>
         <p>Opponent's matches: <span id="opponent-matches">0</span></p>
+        <button id="surrender-button">Surrender</button> <!-- Add this line -->
     </div>
 
     </div>
@@ -159,6 +160,33 @@ function fetchMessages() {
     const totalPairs = <?php echo json_encode($total_pairs); ?>;
     const opponentName = <?php echo json_encode($opponent['username']); ?>;
     const gameMode = <?php echo json_encode($game_mode); ?>;
+
+    // Add this function to handle the surrender button click
+    document.getElementById('surrender-button').addEventListener('click', function() {
+        if (confirm('Are you sure you want to surrender?')) {
+            fetch('api/surrender.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    game_id: gameId,
+                    player_id: playerId
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('You have surrendered. You lose.');
+                    window.location.href = 'dashboard.php';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    });
+
     </script>
     <script src="js/game.js"></script>
 </body>
