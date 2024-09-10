@@ -6,7 +6,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Updated SQL query to fetch the role as well
     $sql = "SELECT id, username, password, role FROM users WHERE username = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $username);
@@ -33,30 +32,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             exit();
         } else {
-            $error = "Invalid username or password";
+            $_SESSION['error'] = "Invalid username or password";
         }
     } else {
-        $error = "Invalid username or password";
+        $_SESSION['error'] = "Invalid username or password";
     }
+
+    header("Location: index.php");
+    exit();
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Memory Card Game</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <h2>Login</h2>
-    <?php if (isset($error)) echo "<p class='error'>$error</p>"; ?>
-    <form action="login.php" method="POST">
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="register.php">Register here</a></p>
-</body>
-</html>
+

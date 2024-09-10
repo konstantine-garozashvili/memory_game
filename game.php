@@ -3,7 +3,7 @@ require_once 'includes/db.php';
 require_once 'includes/functions.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: dashboard.php");
     exit();
 }
 
@@ -70,19 +70,24 @@ $game_mode_name = getGameModeName($game_mode);
     <title>Game #<?php echo $game_id; ?> - <?php echo htmlspecialchars($game_mode_name); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
-    <h2>Game #<?php echo $game_id; ?> - <?php echo htmlspecialchars($game_mode_name); ?></h2>
-    <p>Playing against: <?php echo htmlspecialchars($opponent['username']); ?></p>
-    <p>Your username: <?php echo htmlspecialchars($current_user['username']); ?></p>
-    <p>Game Mode: <?php echo htmlspecialchars($game_mode_name); ?></p>
-
+<body style="background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);">
+    <div class="info-position" style="display: flex; justify-content: space-between; padding: 15px;"> 
+    <div class="left-side">
+    <h2 style="color: white;">Game #<?php echo $game_id; ?> - <?php echo htmlspecialchars($game_mode_name); ?></h2>
+    <p style="color: white;">Playing against: <?php echo htmlspecialchars($opponent['username']); ?></p>
+    <p style="color: white;">Your username: <?php echo htmlspecialchars($current_user['username']); ?></p>
+    <p style="color: white;">Game Mode: <?php echo htmlspecialchars($game_mode_name); ?></p>
+    </div>
 
     <div id="game-info">
         <p>Your turn: <span id="is-your-turn">Waiting...</span></p>
         <p>Your matches: <span id="your-matches">0</span></p>
         <p>Opponent's matches: <span id="opponent-matches">0</span></p>
+    </div>
+
     </div>
 
     <div id="game-board" class="game-board">
