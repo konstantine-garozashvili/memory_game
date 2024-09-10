@@ -6,7 +6,7 @@ require_once 'includes/db.php';
 require_once 'includes/functions.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
 
@@ -63,6 +63,7 @@ $game_modes = [
     <title>Dashboard - Memory Card Game</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index.css">
     <style>
         .navbar {
             display: flex;
@@ -76,7 +77,7 @@ $game_modes = [
         }
     </style>
 </head>
-<body>
+<body style="display: unset !important;">
 
 <?php include 'includes/navbar.php'; ?>
 
@@ -122,7 +123,7 @@ $game_modes = [
         <!-- Chat Icon -->
         <div id="chat-icon">
             <i class="fas fa-comment-dots"></i>
-            <span id="chat-notification" class="notification"></span>
+            
         </div>
 
         <!-- Chat Section -->
