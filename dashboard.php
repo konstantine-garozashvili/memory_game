@@ -315,7 +315,7 @@ function htmlspecialchars(str) {
                 const messages = JSON.parse(data);
                 let chatContent = '';
                 messages.forEach(function(msg) {
-                    chatContent += '<div><strong>' + msg.username + ':</strong> ' + msg.message + 
+                    chatContent += '<div><strong>' + htmlspecialchars(msg.username) + ':</strong> ' + htmlspecialchars(msg.message) + 
                                    ' <small>(' + msg.timestamp + ')</small></div>';
                 });
                 $('#chat-messages').html(chatContent);

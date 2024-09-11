@@ -113,19 +113,17 @@ $game_mode_name = getGameModeName($game_mode);
     <script>
 
 function fetchMessages() {
-        $.ajax({
-            url: 'fetch_messages.php',
-            method: 'GET',
-            success: function(data) {
-                const messages = JSON.parse(data);
+        fetch('fetch_messages.php')
+            .then(response => response.json())
+            .then(data => {
                 let chatContent = '';
-                messages.forEach(function(msg) {
+                data.forEach(function(msg) {
                     chatContent += '<div><strong>' + htmlspecialchars(msg.username) + ':</strong> ' + htmlspecialchars(msg.message) + 
                                    ' <small>(' + msg.timestamp + ')</small></div>';
                 });
-                $('#chat-messages').html(chatContent);
-            }
-        });
+                document.getElementById('chat-messages').innerHTML = chatContent;
+            })
+            .catch(error => console.error('Error:', error));
     }
     
     // Function to escape HTML special characters
@@ -141,25 +139,29 @@ function fetchMessages() {
     setInterval(fetchMessages, 2000);
 
     // Send message on form submission
-    $('#chat-form').submit(function(e) {
+    document.getElementById('chat-form').addEventListener('submit', function(e) {
         e.preventDefault();
-        const message = $('#chat-input').val();
+        const message = document.getElementById('chat-input').value;
         if (message.trim() !== '') {
-            $.ajax({
-                url: 'send_message.php',
+            fetch('send_message.php', {
                 method: 'POST',
-                data: { message: message },
-                success: function(response) {
-                    $('#chat-input').val('');
-                    fetchMessages();
-                }
-            });
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: htmlspecialchars(message) }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('chat-input').value = '';
+                fetchMessages();
+            })
+            .catch(error => console.error('Error:', error));
         }
     });
 
     // Toggle chat container visibility
-    $('#chat-icon').click(function() {
-        $('#chat-container').toggle();
+    document.getElementById('chat-icon').addEventListener('click', function() {
+        document.getElementById('chat-container').classList.toggle('hidden');
     });
 
     const gameId = <?php echo json_encode($game_id); ?>;

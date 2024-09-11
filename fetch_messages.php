@@ -7,10 +7,13 @@ $query = "SELECT chat_messages.message, chat_messages.timestamp, users.username
           ORDER BY chat_messages.timestamp ASC";
           
 $result = $conn->query($query);
+
 $messages = [];
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
+        $row['message'] = htmlspecialchars($row['message'], ENT_QUOTES, 'UTF-8');
+        $row['username'] = htmlspecialchars($row['username'], ENT_QUOTES, 'UTF-8');
         $messages[] = [
             'username' => $row['username'],
             'message' => $row['message'],
