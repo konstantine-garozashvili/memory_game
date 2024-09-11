@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1>Edit User</h1>
     <form method="post" action="" id="editUserForm">
         <label for="username">Username:</label>
-        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" pattern="[A-Za-z]+" title="Username can only contain letters" required>
 
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
