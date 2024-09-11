@@ -184,7 +184,7 @@ a:hover {
     border-radius: 5px;
     cursor: pointer;
     height: 40px;
-    width: 20px !important;
+    width: 40px !important;
 }
 #chat-form button:hover {
     background-color: #0056b3;
