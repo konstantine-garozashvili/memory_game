@@ -127,7 +127,7 @@ function fetchMessages() {
             }
         });
     }
-
+    
     // Function to escape HTML special characters
     function htmlspecialchars(str) {
         return str.replace(/&/g, '&amp;')

@@ -138,7 +138,30 @@ $game_modes = [
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-    
+    function fetchMessages() {
+        $.ajax({
+            url: 'fetch_messages.php',
+            method: 'GET',
+            success: function(data) {
+                const messages = JSON.parse(data);
+                let chatContent = '';
+                messages.forEach(function(msg) {
+                    chatContent += '<div><strong>' + htmlspecialchars(msg.username) + ':</strong> ' + htmlspecialchars(msg.message) + 
+                                   ' <small>(' + msg.timestamp + ')</small></div>';
+                });
+                $('#chat-messages').html(chatContent);
+            }
+        });
+    }
+
+    // Function to escape HTML special characters
+function htmlspecialchars(str) {
+    return str.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+}
     function checkForUpdates() {
         fetch('api/check_updates.php')
             .then(response => response.text())
