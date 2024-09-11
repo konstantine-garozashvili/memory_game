@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 09, 2024 at 12:43 PM
+-- Generation Time: Sep 10, 2024 at 01:40 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -34,14 +34,6 @@ CREATE TABLE `chat_messages` (
   `timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `chat_messages`
---
-
-INSERT INTO `chat_messages` (`id`, `user_id`, `message`, `timestamp`) VALUES
-(8, 17, 'salut', '2024-09-09 11:56:10'),
-(9, 16, 'cava?', '2024-09-09 11:56:14');
-
 -- --------------------------------------------------------
 
 --
@@ -52,9 +44,9 @@ CREATE TABLE `games` (
   `id` int NOT NULL,
   `player1_id` int DEFAULT NULL,
   `player2_id` int DEFAULT NULL,
-  `status` enum('pending','active','finished') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'pending',
+  `status` enum('pending','active','finished') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'pending',
   `current_turn_id` int DEFAULT NULL,
-  `card_positions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `card_positions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `player1_matches` int DEFAULT '0',
   `player2_matches` int DEFAULT '0',
   `winner_id` int DEFAULT NULL,
@@ -86,7 +78,7 @@ CREATE TABLE `invitations` (
   `id` int NOT NULL,
   `sender_id` int DEFAULT NULL,
   `receiver_id` int DEFAULT NULL,
-  `status` enum('pending','accepted','declined') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'pending',
+  `status` enum('pending','accepted','declined') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'pending',
   `game_mode` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -98,21 +90,13 @@ CREATE TABLE `invitations` (
 
 CREATE TABLE `users` (
   `id` int NOT NULL,
-  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `role` enum('user','admin') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'user',
   `last_login` timestamp NULL DEFAULT NULL,
   `profile_picture` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'uploads/default_profile.png'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `users`
---
-
-INSERT INTO `users` (`id`, `username`, `password`, `email`, `role`, `last_login`, `profile_picture`) VALUES
-(16, 'abdelaa', '$2y$10$TX1jKbr84qxyJYlg3TNFhumJ5gk.C0HGkryBQ9ZJX8EXcCNdNR8u.', 'abdela@gmail.com', 'user', '2024-09-09 12:08:00', NULL),
-(18, 'konstantine', '$2y$10$0w1IfMnEALTa1Fl/joWhNejfMJDHkyeF7wd8OId2KyyOp0oXLVzma', 'garozashvili25@gmail.com', 'user', '2024-09-09 12:42:21', 'uploads/Screenshot 2024-08-22 131722.png');
 
 --
 -- Indexes for dumped tables
@@ -162,31 +146,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `chat_messages`
 --
 ALTER TABLE `chat_messages`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `games`
 --
 ALTER TABLE `games`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `game_moves`
 --
 ALTER TABLE `game_moves`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1472;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1553;
 
 --
 -- AUTO_INCREMENT for table `invitations`
 --
 ALTER TABLE `invitations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- Constraints for dumped tables
