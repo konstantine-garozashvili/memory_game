@@ -120,7 +120,7 @@ function fetchMessages() {
                 const messages = JSON.parse(data);
                 let chatContent = '';
                 messages.forEach(function(msg) {
-                    chatContent += '<div><strong>' + msg.username + ':</strong> ' + msg.message + 
+                    chatContent += '<div><strong>' + htmlspecialchars(msg.username) + ':</strong> ' + htmlspecialchars(msg.message) + 
                                    ' <small>(' + msg.timestamp + ')</small></div>';
                 });
                 $('#chat-messages').html(chatContent);
@@ -128,6 +128,14 @@ function fetchMessages() {
         });
     }
 
+    // Function to escape HTML special characters
+    function htmlspecialchars(str) {
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;');
+    }
 
     // Fetch messages every 2 seconds
     setInterval(fetchMessages, 2000);
