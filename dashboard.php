@@ -84,16 +84,7 @@ $game_modes = [
     <div class="container">
         <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
         
-        <h3>Active Games</h3>
-        <ul id="active-games-list">
-            <?php if (empty($active_games)): ?>
-                <li>No active games.</li>
-            <?php else: ?>
-                <?php foreach ($active_games as $game): ?>
-                    <li><a href="game.php?id=<?php echo htmlspecialchars($game['id']); ?>">Game #<?php echo htmlspecialchars($game['id']); ?></a></li>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </ul>
+       
 
         <h3>Pending Invitations</h3>
         <ul id="pending-invitations-list">
